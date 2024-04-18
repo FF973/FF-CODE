@@ -11,6 +11,7 @@ import com.yizhi.common.annotation.Log;
 import com.yizhi.common.controller.BaseController;
 import com.yizhi.common.utils.*;
 import com.yizhi.student.domain.ClassDO;
+import com.yizhi.student.domain.MajorDO;
 import com.yizhi.student.service.ClassService;
 import com.yizhi.student.service.CollegeService;
 import com.yizhi.student.service.MajorService;
@@ -48,8 +49,16 @@ public class StudentInfoController {
 	@GetMapping("/list")
 	@RequiresPermissions("student:studentInfo:studentInfo")
 	public PageUtils list(@RequestParam Map<String, Object> params){
-
-		return null;
+		//查询列表数据
+		if (params.get("sort")!=null) {
+			params.put("sort",BeanHump.camelToUnderline(params.get("sort").toString()));
+		}
+		//查询列表数据
+		Query query = new Query(params);
+		List<StudentInfoDO> list = studentInfoService.list(query);
+		int total = studentInfoService.count(query);
+		PageUtils pageUtils = new PageUtils(list, total,query.getCurrPage(),query.getPageSize());
+		return pageUtils;
 
 	}
 
@@ -62,8 +71,8 @@ public class StudentInfoController {
 	@PostMapping("/update")
 	@RequiresPermissions("student:studentInfo:edit")
 	public R update(StudentInfoDO studentInfo){
-
-		return null;
+		studentInfoService.update(studentInfo);
+		return R.ok();
 	}
 
 	/**
@@ -74,7 +83,8 @@ public class StudentInfoController {
 	@ResponseBody
 	@RequiresPermissions("student:studentInfo:remove")
 	public R remove( Integer id){
-		return null;
+		studentInfoService.remove(id);
+		return R.ok();
 	}
 	
 	/**
@@ -85,8 +95,19 @@ public class StudentInfoController {
 	@ResponseBody
 	@RequiresPermissions("student:studentInfo:batchRemove")
 	public R remove(@RequestParam("ids[]") Integer[] ids){
+		studentInfoService.batchRemove(ids);
+		return R.ok();
+	}
 
-		return null;
+	@Log("学生基础信息表保存")
+	@ResponseBody
+	@PostMapping("/save")
+	@RequiresPermissions("student:studentInfo:add")
+	public R save( StudentInfoDO StudentInfoDO){
+		if(studentInfoService.save(StudentInfoDO)>0){
+			return R.ok();
+		}
+		return R.error();
 	}
 
 
